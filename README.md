@@ -71,7 +71,7 @@ php artisan zoho:push-deals --all --chunk=20 --delay=250 --pause=1500
 
 ---
 
-## 🛠️ Архітектура проєкту
+## 🛠️ Архітектура проекту
 
 - **Backend:** Laravel 12  
 - **Frontend:** Vue 3 + TypeScript (Composition API)  
