@@ -1,6 +1,6 @@
 export const DEAL_STRINGS = {
   // Titles
-  pageTitle: 'Create Deal (Vue 3 + TS)',
+  pageTitle: 'Create Deal',
   dealSection: 'Deal',
   customerSection: 'Customer',
 
