@@ -1,77 +1,80 @@
+# 📊 Zoho CRM Integration
 
-# 📊 Інтеграція з Zoho CRM
-
-Цей проєкт реалізує часткову інтеграцію з **Zoho CRM** для створення, керування та масового імпорту угод (*Deals*) на основі локальних даних. Архітектура включає бекенд‑частину на **Laravel** та фронтенд‑інтерфейс на **Vue 3 + TypeScript** для зручної роботи з угодами через веб‑інтерфейс.
+This project implements partial integration with **Zoho CRM** for creating, managing, and bulk importing **Deals** based on local data.  
+The architecture consists of a **Laravel** backend and a **Vue 3 + TypeScript** frontend interface for convenient deal management via a web UI.
 
 ---
 
-## 🚀 Масовий імпорт угод
+## 🚀 Bulk Deal Import
 
-Для пакетного створення великої кількості угод реалізовано консольну команду:
+A console command is provided for batch creation of a large number of deals:
 
 ```bash
 php artisan zoho:push-deals --all --chunk=20
 ```
 
-📁 Файл: `app/Console/Commands/ZohoPushDeals.php`
+📁 **File:** `app/Console/Commands/ZohoPushDeals.php`
 
-- `--all` — обробити **усі угоди** з бази даних.  
-- `--chunk=20` — надсилати угоди **порціями по 20** для стабільної роботи без перевищення памʼяті або таймаутів.  
-- Додаткові параметри:
-  - `--delay=250` — пауза між окремими угодами (мс)
-  - `--pause=1500` — пауза між порціями (мс)
-  - `--ids=1,2,3` — відправити лише зазначені угоди
+### Available options:
 
-✅ Рекомендований формат запуску для продакшн‑середовища:
+- `--all` — process **all deals** from the database  
+- `--chunk=20` — send deals **in batches of 20** for stable performance  
+- `--delay=250` — delay between individual deals (ms)  
+- `--pause=1500` — delay between batches (ms)  
+- `--ids=1,2,3` — send only the specified deals
+
+✅ **Recommended production usage:**
 
 ```bash
 php artisan zoho:push-deals --all --chunk=20 --delay=250 --pause=1500
 ```
 
-Команда обробляє угоди пачками (*чанками*), автоматично створює акаунт (*Account*), якщо його ще немає, і надсилає угоди до Zoho CRM. При помилках, повʼязаних з лімітом запитів (429 Too Many Requests), реалізовано повторну спробу із затримкою.
+The command processes deals in chunks, automatically creates an **Account** if it doesn’t exist, and sends the deals to Zoho CRM.  
+In case of rate-limit errors (`429 Too Many Requests`), automatic retries with delay are implemented.
 
 ---
 
-## 👥 Розподіл угод між менеджерами
+## 👥 Deal Assignment Logic
 
-Логіка визначення відповідального менеджера винесена в окремий сервіс:
+The logic for assigning a responsible manager is encapsulated in a dedicated service:
 
-📁 `app/Services/ManagerAssignmentService.php`
+📁 **File:** `app/Services/ManagerAssignmentService.php`
 
-- Сервіс виконує автоматичне призначення менеджера для кожної угоди відповідно до бізнес‑правил.  
-- Він викликається при створенні або оновленні угоди через **спостерігача**:
+- The service automatically assigns a manager to each deal based on business rules.  
+- It is triggered on deal creation or update via an **observer**:
 
-📁 `app/Observers/DealObserver.php`
+📁 **File:** `app/Observers/DealObserver.php`
 
-`DealObserver` підписаний на модель `Deal` та викликає `ManagerAssignmentService` щоразу, коли угода створюється або оновлюється.
-
----
-
-## 🧑‍💻 Фронтенд‑інтерфейс
-
-Фронтенд реалізований на **Vue 3 + TypeScript** із використанням Composition API. Основна логіка роботи з формами угод розділена на окремі composable‑модулі для чистоти коду та зручності тестування.
-
-### 🔧 Основні компоненти
-
-- 📁 `resources/js/zoho/deals/components/DealCreateForm.vue` — головна форма створення угоди.  
-- 📁 `resources/js/zoho/deals/composables/useDealForm.ts` — керування станом форми, валідація, сабміт.  
-- 📁 `resources/js/zoho/deals/composables/useCustomers.ts` — отримання списку існуючих клієнтів.  
-- 📁 `resources/js/zoho/deals/constants/strings.ts` — текстові константи для UI.
-
-### ✨ Ключові можливості фронтенду
-
-- Створення нової угоди з полями:
-  - Назва угоди (*Deal Name*)
-  - Джерело (*Source*)
-  - Дані клієнта (імʼя, прізвище, email)
-- Вибір існуючого клієнта з випадаючого списку.
-- Автоматичне заповнення даних клієнта при виборі зі списку.
-- Валідація полів форми (у т.ч. email).
-- Обробка відповіді сервера та відображення повідомлень про успіх/помилки.
+`DealObserver` subscribes to the `Deal` model and invokes `ManagerAssignmentService` whenever a deal is created or updated.
 
 ---
 
-## 🛠️ Архітектура проекту
+## 🧑‍💻 Frontend Interface
+
+The frontend is built with **Vue 3 + TypeScript** using the **Composition API**.  
+Main form logic is separated into composable modules for cleaner structure and easier testing.
+
+### 📁 Key Components
+
+- `resources/js/zoho/deals/components/DealCreateForm.vue` — main deal creation form  
+- `resources/js/zoho/deals/composables/useDealForm.ts` — form state management, validation, submission  
+- `resources/js/zoho/deals/composables/useCustomers.ts` — fetching existing customers  
+- `resources/js/zoho/deals/constants/strings.ts` — UI text constants
+
+### ✨ Features
+
+- Create a new deal with fields:
+  - **Deal Name**
+  - **Source**
+  - **Customer Data** (name, surname, email)
+- Select existing customers from a dropdown list
+- Auto-fill customer data on selection
+- Field validation (including email)
+- Server response handling with success/error messages
+
+---
+
+## 🛠️ Project Architecture
 
 - **Backend:** Laravel 12  
 - **Frontend:** Vue 3 + TypeScript (Composition API)  
@@ -79,33 +82,41 @@ php artisan zoho:push-deals --all --chunk=20 --delay=250 --pause=1500
 
 ---
 
-## ✅ Основні пункти для ревʼю
+## ✅ Review Checklist
 
-- Перевірити роботу команди `zoho:push-deals` з параметрами `--all --chunk=20`.  
-- Оцінити логіку призначення менеджерів у `ManagerAssignmentService.php` та її виклик у `DealObserver.php`.  
-- Перевірити роботу фронтенду: валідацію, підвантаження клієнтів, відправку угоди та обробку відповідей.
+- [ ] Verify `zoho:push-deals` command with `--all --chunk=20`  
+- [ ] Review manager assignment logic in `ManagerAssignmentService.php` and observer integration  
+- [ ] Test frontend behavior: validation, customer loading, deal submission, and response handling
 
 ---
 
-## 📦 Запуск проекту
+## 📦 Setup and Usage
 
-1. Встановити залежності:
+### 1. Install dependencies
 
 ```bash
 composer install
 npm install
 ```
 
-2. Налаштувати `.env` файл із ключами Zoho (`ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, `ZOHO_REFRESH_TOKEN` тощо).
+### 2. Configure environment
 
-3. Запустити локальний сервер:
+Create a `.env` file and add your Zoho API credentials:
+
+```env
+ZOHO_CLIENT_ID=your_client_id
+ZOHO_CLIENT_SECRET=your_client_secret
+ZOHO_REFRESH_TOKEN=your_refresh_token
+```
+
+### 3. Start the development server
 
 ```bash
 php artisan serve
 npm run dev
 ```
 
-4. Виконати масовий імпорт угод:
+### 4. Run the bulk import
 
 ```bash
 php artisan zoho:push-deals --all --chunk=20 --delay=250 --pause=1500
@@ -113,4 +124,6 @@ php artisan zoho:push-deals --all --chunk=20 --delay=250 --pause=1500
 
 ---
 
-© 2025 — Інтеграція з Zoho CRM
+## 📄 License
+
+© 2025 — Zoho CRM Integration Project. All rights reserved.
