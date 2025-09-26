@@ -5,6 +5,7 @@ Homestead.yaml
 Homestead.json
 .php-cs-fixer.cache
 composer.lock
+composer-lock.lock
 
 # Storage & Logs
 /storage/*.key
