@@ -6,6 +6,7 @@ Homestead.json
 .php-cs-fixer.cache
 composer.lock
 composer-lock.lock
+.env
 
 # Storage & Logs
 /storage/*.key
